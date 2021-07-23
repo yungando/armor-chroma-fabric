@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 
 public class ArmorIcon {
     private static final int TEXTURE_SIZE = 256;
-    private static final int ICON_SIZE = 9;
+    public static final int ICON_SIZE = 9;
 
     private static final int SPAN = TEXTURE_SIZE / ICON_SIZE;
 
@@ -43,8 +43,14 @@ public class ArmorIcon {
     }
 
     public void draw(MatrixStack matrices, DrawableHelper gui, int x, int y) {
+        draw(matrices, gui, x, y, 0, ICON_SIZE);
+    }
+
+    /** Draws a vertical slice of the icon (the whole icon if {@code uOffset}
+     * is {@code 0} and {@code width} is {@link #ICON_SIZE}) */
+    public void draw(MatrixStack matrices, DrawableHelper gui, int x, int y, int uOffset, int width) {
         RenderSystem.setShaderTexture(0, texture);
         Util.setColor(color);
-        gui.drawTexture(matrices, x, y, u, v, ICON_SIZE, ICON_SIZE);
+        gui.drawTexture(matrices, x, y, u + uOffset, v, width, ICON_SIZE);
     }
 }

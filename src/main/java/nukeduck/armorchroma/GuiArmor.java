@@ -21,12 +21,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import static net.minecraft.client.render.item.ItemRenderer.ENCHANTED_ITEM_GLINT;
-import static org.lwjgl.opengl.GL11.GL_DST_COLOR;
 import static org.lwjgl.opengl.GL11.GL_EQUAL;
 import static org.lwjgl.opengl.GL11.GL_LEQUAL;
 import static org.lwjgl.opengl.GL11.GL_ONE;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
 import static org.lwjgl.opengl.GL11.GL_SRC_COLOR;
 import static org.lwjgl.opengl.GL11.GL_ZERO;
 
@@ -140,14 +137,14 @@ public class GuiArmor extends DrawableHelper {
         // Drawing icons starts here
 
         if(i == 1) { // leading half icon
-            drawMaskedIcon(matrices, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "leadingMask"));
+            ArmorChroma.config.maskMode().renderer.drawLeadingIcon(matrices, x - 4, top, icon, stack);
             x += 4;
         }
         for(; i < stackPoints - 1; i += 2, x += 8) { // Main body icons
             icon.draw(matrices, this, x, top);
         }
         if(i < stackPoints) { // Trailing half icon
-            drawMaskedIcon(matrices, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "trailingMask"));
+            ArmorChroma.config.maskMode().renderer.drawTrailingIcon(matrices, x, top, icon, stack);
         }
 
         if(glint) { // Draw one glint quad for the whole row
@@ -201,15 +198,6 @@ public class GuiArmor extends DrawableHelper {
             i += d;
         }
         return compressedRows;
-    }
-
-    public void drawMaskedIcon(MatrixStack matrices, int x, int y, ArmorIcon icon, ArmorIcon mask) {
-        mask.draw(matrices, this, x, y);
-        RenderSystem.depthFunc(GL_EQUAL);
-        RenderSystem.blendFunc(GL_DST_COLOR, GL_ZERO);
-        icon.draw(matrices, this, x, y);
-        RenderSystem.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        RenderSystem.depthFunc(GL_LEQUAL);
     }
 
     /** Render an item glint over the specified quad, blending with equal depth */
