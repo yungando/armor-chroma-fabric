@@ -15,9 +15,20 @@ public class ArmorChromaConfig {
     public boolean renderGlint() { return true; }
     public boolean renderBackground() { return true; }
     public boolean compressBar() { return false; }
-    public PartialIconMode maskMode() { return PartialIconMode.FIXED; }
+    public boolean useTexturedPartialIconMask() { return false; }
 
-    /** Config class requiring AutoConfig */
+    public void onChanged() {
+        ArmorChroma.partialIconRenderer = createPartialIconRenderer();
+        System.out.print("onchanged\n");
+    }
+
+    private PartialIconRenderer createPartialIconRenderer() {
+        return useTexturedPartialIconMask()
+                ? new TextureMaskIconRenderer()
+                : new FixMaskIconRenderer();
+    }
+
+    /** Config class used when AutoConfig is installed */
     @SuppressWarnings("FieldMayBeFinal")
     @Config(name = ArmorChroma.MODID)
     public static class ArmorChromaAutoConfig extends ArmorChromaConfig implements ConfigData {
@@ -26,28 +37,14 @@ public class ArmorChromaConfig {
         @Tooltip private boolean renderGlint = super.renderGlint();
         @Tooltip private boolean renderBackground = super.renderBackground();
         @Tooltip private boolean compressBar = super.compressBar();
-        @Tooltip private PartialIconMode partialIconMode = super.maskMode();
+        @Tooltip(count = 2) private boolean useTexturedPartialIconMask = super.useTexturedPartialIconMask();
 
         @Override public boolean isEnabled() { return enabled; }
         @Override public boolean renderGlint() { return renderGlint; }
         @Override public boolean renderBackground() { return renderBackground; }
         @Override public boolean compressBar() { return compressBar; }
-        @Override public PartialIconMode maskMode() { return partialIconMode; }
+        @Override public boolean useTexturedPartialIconMask() { return useTexturedPartialIconMask; }
 
-    }
-
-    @SuppressWarnings("unused")
-    public enum PartialIconMode {
-        FIXED(new FixMaskIconRenderer()),
-        TEXTURED(new TextureMaskIconRenderer());
-
-        public final PartialIconRenderer renderer;
-
-        PartialIconMode(PartialIconRenderer renderer) {
-            this.renderer = renderer;
-        }
-
-        // TODO: toString
     }
 
 }

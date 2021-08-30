@@ -15,7 +15,7 @@ import static org.lwjgl.opengl.GL11.GL_ZERO;
 
 /** Renders masked icons using textures (therefore only allowing vanilla-
  * shaped icons (or at least icons shaped like the mask)) */
-public class TextureMaskIconRenderer extends PartialIconRenderer {
+public class TextureMaskIconRenderer implements PartialIconRenderer {
 
     @Override
     public void drawLeadingIcon(MatrixStack matrices, int x, int y, ArmorIcon icon, ItemStack stack) {

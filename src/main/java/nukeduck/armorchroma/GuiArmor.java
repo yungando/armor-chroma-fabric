@@ -137,14 +137,14 @@ public class GuiArmor extends DrawableHelper {
         // Drawing icons starts here
 
         if(i == 1) { // leading half icon
-            ArmorChroma.config.maskMode().renderer.drawLeadingIcon(matrices, x - 4, top, icon, stack);
+            ArmorChroma.partialIconRenderer.drawLeadingIcon(matrices, x - 4, top, icon, stack);
             x += 4;
         }
         for(; i < stackPoints - 1; i += 2, x += 8) { // Main body icons
             icon.draw(matrices, this, x, top);
         }
         if(i < stackPoints) { // Trailing half icon
-            ArmorChroma.config.maskMode().renderer.drawTrailingIcon(matrices, x, top, icon, stack);
+            ArmorChroma.partialIconRenderer.drawTrailingIcon(matrices, x, top, icon, stack);
         }
 
         if(glint) { // Draw one glint quad for the whole row
