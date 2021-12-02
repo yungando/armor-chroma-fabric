@@ -23,6 +23,9 @@
   },
   "mixins": ["armorchroma.mixins.json"],
 
+  "depends": {
+    "minecraft": "1.16.x"
+  },
   "suggests": {
     "modmenu": "*",
     "cloth-config2": "*"

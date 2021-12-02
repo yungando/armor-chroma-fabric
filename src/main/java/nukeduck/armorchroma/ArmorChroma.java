@@ -30,7 +30,8 @@ public class ArmorChroma implements ClientModInitializer {
         ResourceManagerHelper manager = ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES);
         manager.registerReloadListener(ICON_DATA);
 
-        ModContainer container = FabricLoader.getInstance().getModContainer(MODID).orElseThrow();
+        //noinspection OptionalGetWithoutIsPresent
+        ModContainer container = FabricLoader.getInstance().getModContainer(MODID).get();
         ResourceManagerHelper.registerBuiltinResourcePack(new Identifier(MODID, "alternative-icons"), container, ResourcePackActivationType.NORMAL);
 
         if (USE_AUTO_CONFIG) {

@@ -78,8 +78,9 @@ public class GuiArmor extends DrawableHelper {
         // Most negative zOffset here
         drawBackground(matrices, left, top, compressedRows);
 
-        RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
-        RenderSystem.setShaderColor(1, 1, 1, 1);
+        client.getTextureManager().bindTexture(GUI_ICONS_TEXTURE);
+        //noinspection deprecation
+        RenderSystem.color4f(1, 1, 1, 1);
     }
 
     /**
@@ -88,12 +89,13 @@ public class GuiArmor extends DrawableHelper {
      *              ({@link #ARMOR_PER_ROW} armor points)
      */
     private void drawBackground(MatrixStack matrices, int x, int y, int level) {
-        RenderSystem.setShaderTexture(0, BACKGROUND);
+        client.getTextureManager().bindTexture(BACKGROUND);
         boolean drawBorder = level > 0;
 
         // Plain background
         if (ArmorChroma.config.renderBackground() || drawBorder) {
-            RenderSystem.setShaderColor(1, 1, 1, 1);
+            //noinspection deprecation
+            RenderSystem.color4f(1, 1, 1, 1);
             drawTexture(matrices, x, y, 0, 0, 81, 9);
         }
 
@@ -133,7 +135,7 @@ public class GuiArmor extends DrawableHelper {
      * @param barPoints The points already in the bar */
     private void drawPartialRow(MatrixStack matrices, int left, int top, int barPoints, int stackPoints, ItemStack stack) {
         ArmorIcon icon = ArmorChroma.ICON_DATA.getIcon(stack);
-        RenderSystem.setShaderTexture(0, icon.texture);
+        client.getTextureManager().bindTexture(icon.texture);
 
         boolean glint = ArmorChroma.config.renderGlint() && stack.hasGlint();
 
@@ -221,8 +223,9 @@ public class GuiArmor extends DrawableHelper {
     public void drawTexturedGlintRect(MatrixStack matrices, int x, int y, int u, int v, int width, int height) {
         RenderSystem.depthFunc(GL_EQUAL);
         RenderSystem.blendFuncSeparate(GL_SRC_COLOR, GL_ONE, GL_ONE, GL_ZERO);
-        RenderSystem.setShaderTexture(0, ENCHANTED_ITEM_GLINT);
-        RenderSystem.setShaderColor(.75f, .75f, .75f, 1);
+        client.getTextureManager().bindTexture(ENCHANTED_ITEM_GLINT);
+        //noinspection deprecation
+        RenderSystem.color4f(.75f, .75f, .75f, 1);
 
         // Values taken from RenderPhase#setupGlintTexturing
         long time = net.minecraft.util.Util.getMeasuringTimeMs() * 16;
@@ -232,7 +235,8 @@ public class GuiArmor extends DrawableHelper {
 
         RenderSystem.depthFunc(GL_LEQUAL);
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1, 1, 1, 1);
+        //noinspection deprecation
+        RenderSystem.color4f(1, 1, 1, 1);
     }
 
     private void moveZOffset(int z) {
