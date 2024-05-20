@@ -20,15 +20,15 @@ public class IconTable {
     }
 
     public Integer getIconIndex(ItemStack stack) {
-        if(stack == null) return null;
+        if (stack == null) return null;
 
         Integer i = null;
         Item item = stack.getItem();
 
-        if(item instanceof ArmorItem armorItem) {
+        if (item instanceof ArmorItem armorItem) {
             i = Util.getGlob(materials, armorItem.getMaterial().getName());
         }
-        if(i == null) {
+        if (i == null) {
             i = Util.getGlob(items, Registries.ITEM.getId(item).getPath());
         }
         return i;

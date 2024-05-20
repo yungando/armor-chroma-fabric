@@ -12,7 +12,9 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-/** Replaces the vanilla armor rendering with the mod's */
+/**
+ * Replaces the vanilla armor rendering with the mod's
+ */
 @Mixin(InGameHud.class)
 public abstract class InGameHudMixin {
 
@@ -24,7 +26,9 @@ public abstract class InGameHudMixin {
         return ArmorChroma.config.isEnabled() ? 0 : armor;
     }
 
-    /** Renders the modded armor bar */
+    /**
+     * Renders the modded armor bar
+     */
     @Inject(method = "renderStatusBars",
             at = @At(value = "INVOKE", target = "net/minecraft/util/profiler/Profiler.swap(Ljava/lang/String;)V", ordinal = 0),
             locals = LocalCapture.CAPTURE_FAILEXCEPTION)

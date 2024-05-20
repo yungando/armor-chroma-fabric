@@ -10,7 +10,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
-/** Exposes the unclamped value of the attribute */
+/**
+ * Exposes the unclamped value of the attribute
+ */
 @Mixin(EntityAttributeInstance.class)
 public abstract class EntityAttributeInstanceMixin implements EntityAttributeInstanceAccess {
 
@@ -19,11 +21,12 @@ public abstract class EntityAttributeInstanceMixin implements EntityAttributeIns
     @Unique private double unclampedValue;
 
 
-
-    /** Stores the unclamped value */
+    /**
+     * Stores the unclamped value
+     */
     @Inject(method = "computeValue",
-        at = @At(value = "INVOKE", target = "net/minecraft/entity/attribute/EntityAttribute.clamp(D)D"),
-        locals = LocalCapture.CAPTURE_FAILHARD)
+            at = @At(value = "INVOKE", target = "net/minecraft/entity/attribute/EntityAttribute.clamp(D)D"),
+            locals = LocalCapture.CAPTURE_FAILHARD)
     private void onComputeValue(CallbackInfoReturnable<Double> info, double d, double value) {
         unclampedValue = value;
     }

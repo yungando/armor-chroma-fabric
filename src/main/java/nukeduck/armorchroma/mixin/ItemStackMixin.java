@@ -22,12 +22,13 @@ public abstract class ItemStackMixin {
 
     @Shadow public abstract Item getItem();
 
-    /** Adds the item material to the tooltip */
+    /**
+     * Adds the item material to the tooltip
+     */
     @Inject(method = "getTooltip", at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILSOFT)
     private void onGetTooltip(
-        @Nullable PlayerEntity player, TooltipContext context,
-        CallbackInfoReturnable<List<Text>> info, List<Text> list
-    ) {
+            @Nullable PlayerEntity player, TooltipContext context,
+            CallbackInfoReturnable<List<Text>> info, List<Text> list) {
         if (context.isAdvanced() && getItem() instanceof ArmorItem item) {
             final String material = item.getMaterial().getName();
             list.add(

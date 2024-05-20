@@ -32,12 +32,12 @@ public class ArmorIcon {
     public ArmorIcon(String modid, int i, int color) {
         texture = new Identifier(modid, TEXTURE_PATH);
 
-        if(i >= 0) {
+        if (i >= 0) {
             u = (i % SPAN) * ICON_SIZE;
             v = (i / SPAN) * ICON_SIZE;
         } else {
             u = TEXTURE_SIZE + (i % SPAN) * ICON_SIZE;
-            v = TEXTURE_SIZE + ((i+1) / SPAN - 1) * ICON_SIZE;
+            v = TEXTURE_SIZE + ((i + 1) / SPAN - 1) * ICON_SIZE;
         }
         this.color = color;
     }
