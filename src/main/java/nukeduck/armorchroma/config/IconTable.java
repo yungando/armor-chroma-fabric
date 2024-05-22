@@ -1,9 +1,11 @@
 package nukeduck.armorchroma.config;
 
 import net.minecraft.item.ArmorItem;
+import net.minecraft.item.ElytraItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import nukeduck.armorchroma.compat.ArmoredElytra;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +29,13 @@ public class IconTable {
 
         if(item instanceof ArmorItem armorItem) {
             i = Util.getGlob(materials, armorItem.getMaterial().getName());
+        }
+        if(item instanceof ElytraItem) {
+            ArmorItem armorItem = (ArmorItem) ArmoredElytra.getChestplate(stack).getItem();
+            if (armorItem != null)
+            {
+                i = Util.getGlob(materials, armorItem.getMaterial().getName());
+            }
         }
         if(i == null) {
             i = Util.getGlob(items, Registries.ITEM.getId(item).getPath());
