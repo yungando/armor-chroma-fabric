@@ -31,9 +31,10 @@ public class IconTable {
             i = Util.getGlob(materials, armorItem.getMaterial().getName());
         }
         if(item instanceof ElytraItem) {
-            ArmorItem armorItem = (ArmorItem) ArmoredElytra.getChestplate(stack).getItem();
-            if (armorItem != null)
+            ItemStack elytraStack = ArmoredElytra.getChestplate(stack);
+            if (elytraStack != null)
             {
+                ArmorItem armorItem = (ArmorItem) elytraStack.getItem();
                 i = Util.getGlob(materials, armorItem.getMaterial().getName());
             }
         }
