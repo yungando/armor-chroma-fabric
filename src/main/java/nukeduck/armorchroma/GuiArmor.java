@@ -194,8 +194,11 @@ public class GuiArmor {
         }
 
         for (EquipmentSlot slot : slots) {
-            ItemStack stack = player.getEquippedStack(slot);
-            attributes.addTemporaryModifiers(stack.getAttributeModifiers(slot));
+            player.getEquippedStack(slot).applyAttributeModifiers(slot, (attribute, modifier) -> {
+                if (attribute == EntityAttributes.GENERIC_ARMOR) {
+                    armor.addTemporaryModifier(modifier);
+                }
+            });
 
             int attrNext = Math.min(displayedArmorCap, (int) ((EntityAttributeInstanceAccess) armor).getUnclampedValue());
             int points = attrNext - attrLast;
@@ -242,7 +245,7 @@ public class GuiArmor {
     /**
      * Render an item glint over the specified quad, blending with equal depth
      */
-    public void drawTexturedGlintRect(DrawContext context, int x, int y, int u, int v, int width, int height) {
+    public void drawTexturedGlintRect(DrawContext context, int x, int y, float u, float v, int width, int height) {
         RenderSystem.depthFunc(GL_EQUAL);
         RenderSystem.blendFuncSeparate(GL_SRC_COLOR, GL_ONE, GL_ONE, GL_ZERO);
         float intensity = client.options.getGlintStrength().getValue().floatValue()
@@ -252,8 +255,8 @@ public class GuiArmor {
         // Values taken from RenderPhase#setupGlintTexturing
         double glintSpeed = client.options.getGlintSpeed().getValue();
         long time = (long) (net.minecraft.util.Util.getMeasuringTimeMs() * glintSpeed * 8);
-        u += -(time % 110000) * 256 / 110000 + x;
-        v += (time % 30000) * 256 / 30000 + y;
+        u += -(time % 110000) * 256 / 110000f + x;
+        v += (time % 30000) * 256 / 30000f + y;
         // Adding x and y so that adjacent icons use adjacent parts of the
         // texture (instead of the same part) and to remove visible seams
         context.drawTexture(ITEM_ENCHANTMENT_GLINT, x, y, zOffset, u, v, width, height, TEXTURE_SIZE, TEXTURE_SIZE);

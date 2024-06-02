@@ -1,10 +1,11 @@
 package nukeduck.armorchroma.config;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.item.DyeableItem;
-import net.minecraft.item.Item;
+import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.util.math.ColorHelper;
 
 import java.util.Map;
 import java.util.Map.Entry;
@@ -14,21 +15,18 @@ public final class Util {
     private Util() {}
 
     public static int getColor(ItemStack stack) {
-        if (stack != null) {
-            Item item = stack.getItem();
-
-            if (item instanceof DyeableItem dyeableItem) {
-                return dyeableItem.getColor(stack);
-            }
+        if (stack != null && stack.isIn(ItemTags.DYEABLE)) {
+            return DyedColorComponent.getColor(stack, DyedColorComponent.DEFAULT_COLOR);
+        } else {
+            return 0xffffff;
         }
-        return 0xffffff;
     }
 
     public static void setColor(int color) {
-        int r = (color >> 16) & 0xff;
-        int g = (color >> 8) & 0xff;
-        int b = color & 0xff;
-        RenderSystem.setShaderColor(r / 255f, g / 255f, b / 255f, 1);
+        float r = ColorHelper.Argb.getRed(color) / 255f;
+        float g = ColorHelper.Argb.getGreen(color) / 255f;
+        float b = ColorHelper.Argb.getBlue(color) / 255f;
+        RenderSystem.setShaderColor(r, g, b, 1);
     }
 
     public static String getModid(ItemStack stack) {

@@ -1,6 +1,6 @@
 package nukeduck.armorchroma.mixin;
 
-import net.minecraft.client.item.TooltipContext;
+import net.minecraft.client.item.TooltipType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
@@ -26,15 +26,12 @@ public abstract class ItemStackMixin {
      * Adds the item material to the tooltip
      */
     @Inject(method = "getTooltip", at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILSOFT)
-    private void onGetTooltip(
-            @Nullable PlayerEntity player, TooltipContext context,
-            CallbackInfoReturnable<List<Text>> info, List<Text> list) {
-        if (context.isAdvanced() && getItem() instanceof ArmorItem item) {
-            final String material = item.getMaterial().getName();
-            list.add(
+    private void onGetTooltip(Item.TooltipContext context, @Nullable PlayerEntity player, TooltipType type, CallbackInfoReturnable<List<Text>> info) {
+        if (type.isAdvanced() && getItem() instanceof ArmorItem item) {
+            String material = item.getMaterial().getIdAsString();
+            info.getReturnValue().add(
                     Text.translatable("armorchroma.tooltip.material", material)
-                            .formatted(Formatting.DARK_GRAY)
-            );
+                            .formatted(Formatting.DARK_GRAY));
         }
     }
 
