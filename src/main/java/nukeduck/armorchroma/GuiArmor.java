@@ -35,7 +35,7 @@ import static org.lwjgl.opengl.GL11.GL_ZERO;
  */
 public class GuiArmor {
 
-    private static final Identifier BACKGROUND = new Identifier(ArmorChroma.MODID, "textures/gui/background.png");
+    private static final Identifier BACKGROUND = Identifier.of(ArmorChroma.MODID, "textures/gui/background.png");
 
     /**
      * The colors used for the border of the bar at different levels

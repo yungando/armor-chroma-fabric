@@ -29,7 +29,7 @@ public class IconData implements SimpleResourceReloadListener<Void> {
     private static final ArmorIcon FALLBACK_ICON = new ArmorIcon(0);
     private static final String DEFAULT = "default";
     private static final String MINECRAFT = "minecraft";
-    private static final Identifier ID = new Identifier(ArmorChroma.MODID, "icondata");
+    private static final Identifier ID = Identifier.of(ArmorChroma.MODID, "icondata");
 
     @Override
     public Identifier getFabricId() {
@@ -41,7 +41,7 @@ public class IconData implements SimpleResourceReloadListener<Void> {
         String modid = Util.getModid(stack);
         IconTable mod = mods.get(modid);
 
-        Integer i = null;
+        Integer i;
 
         if (mod != null) {
             i = mod.getIconIndex(stack);
@@ -77,7 +77,7 @@ public class IconData implements SimpleResourceReloadListener<Void> {
 
             for (ModContainer modContainer : FabricLoader.getInstance().getAllMods()) {
                 String modid = modContainer.getMetadata().getId();
-                List<Resource> resources = manager.getAllResources(new Identifier(modid, "textures/gui/armor_chroma.json"));
+                List<Resource> resources = manager.getAllResources(Identifier.of(modid, "textures/gui/armor_chroma.json"));
                 if (!resources.isEmpty()) {
                     for (Resource resource : resources) {
                         try (Reader reader = new BufferedReader(new InputStreamReader(resource.getInputStream()))) {

@@ -30,7 +30,7 @@ public class ArmorIcon {
     }
 
     public ArmorIcon(String modid, int i, int color) {
-        texture = new Identifier(modid, TEXTURE_PATH);
+        texture = Identifier.of(modid, TEXTURE_PATH);
 
         if (i >= 0) {
             u = (i % SPAN) * ICON_SIZE;
