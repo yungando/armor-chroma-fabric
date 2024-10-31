@@ -21,6 +21,7 @@ Features include:
 - Original mod by [jobicade], [original suggestion](https://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/requests-ideas-for-mods/2566774) by [badhaloninja](https://www.minecraftforum.net/members/badhaloninja)
 - Alternative icons by [Andrew Grant]
 - Icons for Additional Additions, Copper Equipment, DragonLoot and Tech Reborn by [Ejektaflex](https://github.com/ejektaflex)
+- `it_it` translation by [VladAndreiMorariu](https://github.com/VladAndreiMorariu)
 - `ko_kr` translation by [pkb](https://github.com/XxPKBxX)
 - Option to reverse the armor order suggested by [robotkoer](https://www.curseforge.com/members/robotkoer/projects)
 
