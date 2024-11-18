@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.AttributeContainer;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
@@ -11,6 +12,8 @@ import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.MathHelper;
 import nukeduck.armorchroma.config.ArmorIcon;
 import nukeduck.armorchroma.config.Util;
 
@@ -21,14 +24,6 @@ import java.util.Map.Entry;
 
 import static net.minecraft.client.render.item.ItemRenderer.ITEM_ENCHANTMENT_GLINT;
 import static nukeduck.armorchroma.ArmorChroma.TEXTURE_SIZE;
-import static org.lwjgl.opengl.GL11.GL_DST_COLOR;
-import static org.lwjgl.opengl.GL11.GL_EQUAL;
-import static org.lwjgl.opengl.GL11.GL_LEQUAL;
-import static org.lwjgl.opengl.GL11.GL_ONE;
-import static org.lwjgl.opengl.GL11.GL_ONE_MINUS_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_ALPHA;
-import static org.lwjgl.opengl.GL11.GL_SRC_COLOR;
-import static org.lwjgl.opengl.GL11.GL_ZERO;
 
 /**
  * Renders the armor bar in the HUD
@@ -41,7 +36,7 @@ public class GuiArmor {
      * The colors used for the border of the bar at different levels
      * @see #drawBackground(DrawContext, int, int, int)
      */
-    private static final int[] BG_COLORS = {0x3acaff, 0x3be55a, 0xffff00, 0xff9d00, 0xed3200, 0x7130c1};
+    private static final int[] BG_COLORS = {0xff3acaff, 0xff3be55a, 0xffffff00, 0xffff9d00, 0xffed3200, 0xff7130c1};
 
     /**
      * The vertical distance between the top of each row
@@ -57,10 +52,9 @@ public class GuiArmor {
      * Fallback attributes required when getting the player's armor
      */
     private static final DefaultAttributeContainer FALLBACK_ATTRIBUTES = DefaultAttributeContainer.builder()
-            .add(EntityAttributes.GENERIC_ARMOR).build();
+            .add(EntityAttributes.ARMOR).build();
 
     private final MinecraftClient client = MinecraftClient.getInstance();
-    private int zOffset;
 
     /**
      * Render the bar as a full replacement for vanilla
@@ -70,16 +64,13 @@ public class GuiArmor {
         int totalPoints = getArmorPoints(client.player, pointsMap);
         if (totalPoints <= 0) return;
 
-        RenderSystem.enableBlend();
-        RenderSystem.enableDepthTest();
-
         // Total points in all rows so far
         int barPoints = 0;
 
         int compressedRows = ArmorChroma.config.compressBar() ? compressRows(pointsMap, totalPoints) : 0;
 
-        // Accounts for the +2 glint rect offset
-        zOffset = -2;
+        context.getMatrices().push();
+        addZOffset(context, -2); // Accounts for the +2 glint rect offset
 
         for (Entry<EquipmentSlot, Integer> entry : pointsMap.entrySet()) {
             //noinspection ConstantConditions (nullable stuff)
@@ -88,8 +79,6 @@ public class GuiArmor {
         }
         // Most negative zOffset here
         drawBackground(context, left, top, compressedRows);
-
-        RenderSystem.setShaderColor(1, 1, 1, 1);
     }
 
     /**
@@ -103,15 +92,15 @@ public class GuiArmor {
         // Plain background
         if (ArmorChroma.config.renderBackground() || drawBorder) {
             RenderSystem.setShaderColor(1, 1, 1, 1);
-            context.drawTexture(BACKGROUND, x, y, zOffset, 0, 0, 81, 9, TEXTURE_SIZE, TEXTURE_SIZE);
+            context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, x, y, 0, 0, 81, 9, TEXTURE_SIZE, TEXTURE_SIZE);
+
+            // Colored border
+            if (drawBorder) {
+                int color = level <= BG_COLORS.length ? BG_COLORS[level - 1] : BG_COLORS[BG_COLORS.length - 1];
+                context.drawTexture(RenderLayer::getGuiTextured, BACKGROUND, x - 1, y - 1, 81, 0, 83, 11, TEXTURE_SIZE, TEXTURE_SIZE, color);
+            }
         }
 
-        // Colored border
-        if (drawBorder) {
-            int color = level <= BG_COLORS.length ? BG_COLORS[level - 1] : BG_COLORS[BG_COLORS.length - 1];
-            Util.setColor(color);
-            context.drawTexture(BACKGROUND, x - 1, y - 1, zOffset, 81, 0, 83, 11, TEXTURE_SIZE, TEXTURE_SIZE);
-        }
     }
 
     /**
@@ -125,7 +114,7 @@ public class GuiArmor {
         // Repeatedly fill rows when possible
         while ((space = ARMOR_PER_ROW - (barPoints % ARMOR_PER_ROW)) <= stackPoints) {
             drawPartialRow(context, left, top, ARMOR_PER_ROW - space, space, stack);
-            zOffset -= 3; // Move out of range of glint offset
+            addZOffset(context, -3); // Move out of range of glint offset
 
             // Move up a row
             top -= ROW_SPACING;
@@ -136,7 +125,7 @@ public class GuiArmor {
         // Whatever's left over (doesn't fill the whole row)
         if (stackPoints > 0) {
             drawPartialRow(context, left, top, ARMOR_PER_ROW - space, stackPoints, stack);
-            zOffset -= 1;
+            addZOffset(context, -1);
         }
     }
 
@@ -146,11 +135,11 @@ public class GuiArmor {
      */
     private void drawPartialRow(DrawContext context, int left, int top, int barPoints, int stackPoints, ItemStack stack) {
         ArmorIcon icon = ArmorChroma.ICON_DATA.getIcon(stack);
-        RenderSystem.setShaderTexture(0, icon.texture);
-
         boolean glint = ArmorChroma.config.renderGlint() && stack.hasGlint();
 
-        if (glint) zOffset += 2; // Glint rows should appear on top of normal rows
+        if (glint) {
+            addZOffset(context, 2); // Glint rows should appear on top of normal rows
+        }
 
         int i = barPoints & 1;
         int x = left + barPoints * 4;
@@ -161,16 +150,18 @@ public class GuiArmor {
             drawMaskedIcon(context, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "leadingMask"));
             x += 4;
         }
+
         for (; i < stackPoints - 1; i += 2, x += 8) { // Main body icons
-            icon.draw(context, x, top, zOffset);
+            icon.draw(context, x, top);
         }
+
         if (i < stackPoints) { // Trailing half icon
             drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "trailingMask"));
         }
 
         if (glint) { // Draw one glint quad for the whole row
-            this.drawTexturedGlintRect(context, left + barPoints * 4, top, left, 0, stackPoints * 4 + 1, 9);
-            zOffset -= 2;
+            drawTexturedGlintRect(context, left + barPoints * 4, top, left, top, stackPoints * 4 + 1, ArmorIcon.ICON_SIZE);
+            addZOffset(context, -2);
         }
     }
 
@@ -182,11 +173,11 @@ public class GuiArmor {
      */
     private int getArmorPoints(ClientPlayerEntity player, Map<EquipmentSlot, Integer> pointsMap) {
         AttributeContainer attributes = new AttributeContainer(FALLBACK_ATTRIBUTES);
-        EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.GENERIC_ARMOR);
+        EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.ARMOR);
         if (armor == null) return 0;
 
         int displayedArmorCap = ArmorChroma.config.getDisplayedArmorCap();
-        int attrLast = (int) ((EntityAttributeInstanceAccess) armor).getUnclampedValue();
+        int attrLast = (int) ((EntityAttributeInstanceAccess) armor).armorChroma_getUnclampedValue();
 
         EquipmentSlot[] slots = EquipmentSlot.values();
         if (ArmorChroma.config.reverse()) {
@@ -195,17 +186,18 @@ public class GuiArmor {
 
         for (EquipmentSlot slot : slots) {
             player.getEquippedStack(slot).applyAttributeModifiers(slot, (attribute, modifier) -> {
-                if (attribute == EntityAttributes.GENERIC_ARMOR) {
+                if (attribute == EntityAttributes.ARMOR) {
                     armor.addTemporaryModifier(modifier);
                 }
             });
 
-            int attrNext = Math.min(displayedArmorCap, (int) ((EntityAttributeInstanceAccess) armor).getUnclampedValue());
+            int attrNext = Math.min(displayedArmorCap, (int) ((EntityAttributeInstanceAccess) armor).armorChroma_getUnclampedValue());
             int points = attrNext - attrLast;
             attrLast = attrNext;
 
             if (points > 0) pointsMap.put(slot, points);
         }
+
         return attrLast;
     }
 
@@ -233,37 +225,23 @@ public class GuiArmor {
         return compressedRows;
     }
 
-    public void drawMaskedIcon(DrawContext context, int x, int y, ArmorIcon icon, ArmorIcon mask) {
-        mask.draw(context, x, y, zOffset);
-        RenderSystem.depthFunc(GL_EQUAL);
-        RenderSystem.blendFunc(GL_DST_COLOR, GL_ZERO);
-        icon.draw(context, x, y, zOffset);
-        RenderSystem.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        RenderSystem.depthFunc(GL_LEQUAL);
+    private void drawMaskedIcon(DrawContext context, int x, int y, ArmorIcon icon, ArmorIcon mask) {
+        mask.draw(context, x, y);
+        icon.drawMasked(context, x, y);
     }
 
     /**
      * Render an item glint over the specified quad, blending with equal depth
      */
-    public void drawTexturedGlintRect(DrawContext context, int x, int y, float u, float v, int width, int height) {
-        RenderSystem.depthFunc(GL_EQUAL);
-        RenderSystem.blendFuncSeparate(GL_SRC_COLOR, GL_ONE, GL_ONE, GL_ZERO);
+    @SuppressWarnings("SameParameterValue")
+    private void drawTexturedGlintRect(DrawContext context, int x, int y, float u, float v, int width, int height) {
         float intensity = client.options.getGlintStrength().getValue().floatValue()
                 * ArmorChroma.config.glintIntensity();
-        RenderSystem.setShaderColor(intensity, intensity, intensity, 1);
-
-        // Values taken from RenderPhase#setupGlintTexturing
-        double glintSpeed = client.options.getGlintSpeed().getValue();
-        long time = (long) (net.minecraft.util.Util.getMeasuringTimeMs() * glintSpeed * 8);
-        u += -(time % 110000) * 256 / 110000f + x;
-        v += (time % 30000) * 256 / 30000f + y;
-        // Adding x and y so that adjacent icons use adjacent parts of the
-        // texture (instead of the same part) and to remove visible seams
-        context.drawTexture(ITEM_ENCHANTMENT_GLINT, x, y, zOffset, u, v, width, height, TEXTURE_SIZE, TEXTURE_SIZE);
-
-        RenderSystem.depthFunc(GL_LEQUAL);
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderColor(1, 1, 1, 1);
+        int color = ColorHelper.getWhite(MathHelper.clamp(intensity, 0, 1));
+        context.drawTexture(id -> RenderLayer.getGlint(), ITEM_ENCHANTMENT_GLINT, x, y, u, v, width, height, TEXTURE_SIZE, TEXTURE_SIZE, color);
     }
 
+    private void addZOffset(DrawContext context, int z) {
+        context.getMatrices().translate(0, 0, z);
+    }
 }

@@ -6,6 +6,6 @@ package nukeduck.armorchroma;
  */
 public interface EntityAttributeInstanceAccess {
 
-    double getUnclampedValue();
+    double armorChroma_getUnclampedValue();
 
 }

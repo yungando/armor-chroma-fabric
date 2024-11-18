@@ -10,7 +10,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
 import nukeduck.armorchroma.ArmorChroma;
 
 import java.io.BufferedReader;
@@ -71,7 +70,7 @@ public class IconData implements SimpleResourceReloadListener<Void> {
     }
 
     @Override
-    public CompletableFuture<Void> load(ResourceManager manager, Profiler profiler, Executor executor) {
+    public CompletableFuture<Void> load(ResourceManager manager, Executor executor) {
         return CompletableFuture.supplyAsync(() -> {
             mods.clear();
 
@@ -113,7 +112,7 @@ public class IconData implements SimpleResourceReloadListener<Void> {
     }
 
     @Override
-    public CompletableFuture<Void> apply(Void data, ResourceManager manager, Profiler profiler, Executor executor) {
+    public CompletableFuture<Void> apply(Void data, ResourceManager manager, Executor executor) {
         return CompletableFuture.completedFuture(null);
     }
 
