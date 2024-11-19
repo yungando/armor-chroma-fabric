@@ -30,9 +30,13 @@ public final class Util {
     public static <V> V getGlob(Map<String, V> map, String string) {
         if (map == null) return null;
 
+        V value = map.get(string);
+        if (value != null) return value;
+
         for (Entry<String, V> entry : map.entrySet()) {
             if (globMatches(entry.getKey(), string)) return entry.getValue();
         }
+
         return null;
     }
 

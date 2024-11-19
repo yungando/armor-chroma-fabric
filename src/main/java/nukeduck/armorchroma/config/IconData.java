@@ -27,7 +27,7 @@ public class IconData implements SimpleResourceReloadListener<Void> {
 
     private static final ArmorIcon FALLBACK_ICON = new ArmorIcon(0);
     private static final String DEFAULT = "default";
-    private static final String MINECRAFT = "minecraft";
+    private static final String MINECRAFT = Identifier.DEFAULT_NAMESPACE;
     private static final Identifier ID = Identifier.of(ArmorChroma.MODID, "icondata");
 
     @Override
@@ -35,7 +35,9 @@ public class IconData implements SimpleResourceReloadListener<Void> {
         return ID;
     }
 
-    /** @return The armor icon corresponding to {@code stack} */
+    /**
+     * @return The armor icon corresponding to {@code stack}
+     */
     public ArmorIcon getIcon(ItemStack stack) {
         String modid = Util.getModid(stack);
         IconTable mod = mods.get(modid);
@@ -51,22 +53,32 @@ public class IconData implements SimpleResourceReloadListener<Void> {
                 return getSpecial(modid, DEFAULT);
             }
         }
+
         return getSpecial(MINECRAFT, DEFAULT);
     }
 
     public ArmorIcon getSpecial(String modid, String key) {
-        IconTable mod = mods.get(modid);
+        ArmorIcon icon = getSpecialWithoutFallback(modid, key);
 
-        if (mod == null) {
-            modid = MINECRAFT;
-            mod = mods.get(modid);
-
-            if (mod == null)
-                return FALLBACK_ICON;
+        if (icon == null && !modid.equals(MINECRAFT)) {
+            icon = getSpecialWithoutFallback(MINECRAFT, key);
         }
 
-        Integer i = mod.getSpecialIndex(key);
-        return i != null ? new ArmorIcon(modid, i) : getSpecial(MINECRAFT, key);
+        return icon != null ? icon : FALLBACK_ICON;
+    }
+
+    private ArmorIcon getSpecialWithoutFallback(String modid, String key) {
+        IconTable mod = mods.get(modid);
+
+        if (mod != null) {
+            Integer i = mod.getSpecialIndex(key);
+
+            if (i != null) {
+                return new ArmorIcon(modid, i);
+            }
+        }
+
+        return null;
     }
 
     @Override

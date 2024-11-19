@@ -11,10 +11,10 @@ import java.util.Optional;
 
 public class MaterialHelper {
 
-    private static final Identifier TURTLE_MATERIAL = Identifier.of("turtle");
+    private static final String TURTLE_MATERIAL = "turtle";
 
     @Nullable
-    public static Identifier getMaterial(Item item) {
+    public static String getMaterial(Item item) {
         EquippableComponent equippableComponent = item.getComponents().get(DataComponentTypes.EQUIPPABLE);
 
         if (equippableComponent != null) {
@@ -29,7 +29,7 @@ public class MaterialHelper {
                 if (id.equals(EquipmentModels.TURTLE_SCUTE)) {
                     return TURTLE_MATERIAL;
                 } else {
-                    return id;
+                    return id.getPath();
                 }
             }
         }

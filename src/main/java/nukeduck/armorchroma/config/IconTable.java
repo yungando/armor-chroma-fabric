@@ -3,7 +3,6 @@ package nukeduck.armorchroma.config;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
 import nukeduck.armorchroma.MaterialHelper;
 
 import java.util.HashMap;
@@ -25,10 +24,10 @@ public class IconTable {
 
         Integer i = null;
         Item item = stack.getItem();
-        Identifier material = MaterialHelper.getMaterial(item);
+        String material = MaterialHelper.getMaterial(item);
 
         if (material != null) {
-            i = Util.getGlob(materials, material.getPath());
+            i = Util.getGlob(materials, material);
         }
 
         if (i == null) {

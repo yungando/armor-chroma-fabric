@@ -1,0 +1,36 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"type": "object",
+	"properties": {
+		"materials": {
+			"type": "object",
+			"patternProperties": {
+				".*": {
+					"type": "integer"
+				}
+			}
+		},
+		"items": {
+			"type": "object",
+			"patternProperties": {
+				".*": {
+					"type": "integer"
+				}
+			}
+		},
+		"special": {
+			"type": "object",
+			"properties": {
+				"default": {
+					"type": "integer"
+				},
+				"leadingMask": {
+					"type": "integer"
+				},
+				"trailingMask": {
+					"type": "integer"
+				}
+			}
+		}
+	}
+}
