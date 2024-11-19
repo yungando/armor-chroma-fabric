@@ -21,8 +21,7 @@ Built-in icons are included for some supported mods:
 
 (See [here](https://www.curseforge.com/minecraft/mc-mods/armor-chroma) for other mods supported by the original mod (mostly Forge-only mods).)
 
-Support for other mods can be added using resource packs, for instance [Chromatic Icons
-](https://modrinth.com/resourcepack/chromatic-icons).
+Support for other mods can be added using resource packs, for instance [Chromatic Icons](https://modrinth.com/resourcepack/chromatic-icons).
 
 To create your own resource pack, see the documentation [here](https://github.com/A5b84/armor-chroma-fabric/blob/main/docs/resource-packs.md).
 
