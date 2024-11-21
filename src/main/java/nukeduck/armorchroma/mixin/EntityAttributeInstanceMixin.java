@@ -21,9 +21,6 @@ public abstract class EntityAttributeInstanceMixin implements EntityAttributeIns
     @Unique private double unclampedValue;
 
 
-    /**
-     * Stores the unclamped value
-     */
     @Inject(method = "computeValue",
             at = @At(value = "INVOKE", target = "net/minecraft/entity/attribute/EntityAttribute.clamp(D)D"))
     private void onComputeValue(CallbackInfoReturnable<Double> info, @Local(ordinal = 1) double value) {
@@ -32,8 +29,7 @@ public abstract class EntityAttributeInstanceMixin implements EntityAttributeIns
 
     @Override
     public double armorChroma_getUnclampedValue() {
-        getValue(); // Compute the unclamped value again if needed
+        getValue(); // Computes the unclamped value again if needed
         return unclampedValue;
     }
-
 }

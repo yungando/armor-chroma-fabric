@@ -39,8 +39,8 @@ public class IconData implements SimpleResourceReloadListener<Void> {
      * @return The armor icon corresponding to {@code stack}
      */
     public ArmorIcon getIcon(ItemStack stack) {
-        String modid = Util.getModid(stack);
-        IconTable mod = mods.get(modid);
+        String modId = Util.getModId(stack);
+        IconTable mod = mods.get(modId);
 
         Integer i;
 
@@ -48,9 +48,9 @@ public class IconData implements SimpleResourceReloadListener<Void> {
             i = mod.getIconIndex(stack);
 
             if (i != null) {
-                return new ArmorIcon(modid, i, Util.getColor(stack));
+                return new ArmorIcon(modId, i, Util.getColor(stack));
             } else {
-                return getSpecial(modid, DEFAULT);
+                return getSpecial(modId, DEFAULT);
             }
         }
 

@@ -6,8 +6,12 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.Colors;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Predicate;
 
 public final class Util {
 
@@ -21,7 +25,7 @@ public final class Util {
         }
     }
 
-    public static String getModid(ItemStack stack) {
+    public static String getModId(ItemStack stack) {
         return stack != null
                 ? Registries.ITEM.getId(stack.getItem()).getNamespace()
                 : null;
@@ -93,13 +97,15 @@ public final class Util {
         return -1;
     }
 
-    /** Reverses {@code array} in place */
-    public static <T> void reverse(T[] array) {
-        for (int start = 0, end = array.length - 1; start < end; start++, end--) {
-            T tmp = array[start];
-            array[start] = array[end];
-            array[end] = tmp;
-        }
-    }
+    public static <T> List<T> filter(Collection<T> collection, Predicate<T> predicate) {
+        List<T> filtered = new ArrayList<>(collection.size());
 
+        for (T value : collection) {
+            if (predicate.test(value)) {
+                filtered.add(value);
+            }
+        }
+
+        return filtered;
+    }
 }

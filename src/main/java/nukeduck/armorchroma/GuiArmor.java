@@ -17,10 +17,9 @@ import net.minecraft.util.math.MathHelper;
 import nukeduck.armorchroma.config.ArmorIcon;
 import nukeduck.armorchroma.config.Util;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static net.minecraft.client.render.item.ItemRenderer.ITEM_ENCHANTMENT_GLINT;
 import static nukeduck.armorchroma.ArmorChroma.TEXTURE_SIZE;
@@ -59,26 +58,24 @@ public class GuiArmor {
     /**
      * Render the bar as a full replacement for vanilla
      */
-    public void draw(DrawContext context, int left, int top) {
-        Map<EquipmentSlot, Integer> pointsMap = new LinkedHashMap<>();
-        int totalPoints = getArmorPoints(client.player, pointsMap);
+    public void draw(DrawContext context, int x, int y) {
+        List<ArmorBarSegment> segments = new ArrayList<>(EquipmentSlot.VALUES.size());
+        int totalPoints = getArmorPoints(client.player, segments);
         if (totalPoints <= 0) return;
 
-        // Total points in all rows so far
         int barPoints = 0;
-
-        int compressedRows = ArmorChroma.config.compressBar() ? compressRows(pointsMap, totalPoints) : 0;
+        int compressedRows = ArmorChroma.config.compressBar() ? compressRows(segments, totalPoints) : 0;
 
         context.getMatrices().push();
         addZOffset(context, -2); // Accounts for the +2 glint rect offset
 
-        for (Entry<EquipmentSlot, Integer> entry : pointsMap.entrySet()) {
-            //noinspection ConstantConditions (nullable stuff)
-            drawPiece(context, left, top, barPoints, entry.getValue(), client.player.getEquippedStack(entry.getKey()));
-            barPoints += entry.getValue();
+        for (ArmorBarSegment segment : segments) {
+            drawSegment(context, x, y, barPoints, segment);
+            barPoints += segment.getArmorPoints();
         }
+
         // Most negative zOffset here
-        drawBackground(context, left, top, compressedRows);
+        drawBackground(context, x, y, compressedRows);
     }
 
     /**
@@ -107,24 +104,25 @@ public class GuiArmor {
      * Draws all the rows needed for a single piece of armor
      * @param barPoints The number of points in the bar before this piece
      */
-    private void drawPiece(DrawContext context, int left, int top, int barPoints, int stackPoints, ItemStack stack) {
+    private void drawSegment(DrawContext context, int x, int y, int barPoints, ArmorBarSegment segment) {
         int space;
-        top -= (barPoints / ARMOR_PER_ROW) * ROW_SPACING; // Offset to account for full bars
+        y -= (barPoints / ARMOR_PER_ROW) * ROW_SPACING; // Offset to account for full bars
+        int stackPoints = segment.getArmorPoints();
 
         // Repeatedly fill rows when possible
         while ((space = ARMOR_PER_ROW - (barPoints % ARMOR_PER_ROW)) <= stackPoints) {
-            drawPartialRow(context, left, top, ARMOR_PER_ROW - space, space, stack);
+            drawPartialRow(context, x, y, ARMOR_PER_ROW - space, space, segment);
             addZOffset(context, -3); // Move out of range of glint offset
 
             // Move up a row
-            top -= ROW_SPACING;
+            y -= ROW_SPACING;
             barPoints += space;
             stackPoints -= space;
         }
 
         // Whatever's left over (doesn't fill the whole row)
         if (stackPoints > 0) {
-            drawPartialRow(context, left, top, ARMOR_PER_ROW - space, stackPoints, stack);
+            drawPartialRow(context, x, y, ARMOR_PER_ROW - space, stackPoints, segment);
             addZOffset(context, -1);
         }
     }
@@ -133,11 +131,10 @@ public class GuiArmor {
      * Renders a partial row of icons, {@code stackPoints} wide
      * @param barPoints The points already in the bar
      */
-    private void drawPartialRow(DrawContext context, int left, int top, int barPoints, int stackPoints, ItemStack stack) {
-        ArmorIcon icon = ArmorChroma.ICON_DATA.getIcon(stack);
-        boolean glint = ArmorChroma.config.renderGlint() && stack.hasGlint();
+    private void drawPartialRow(DrawContext context, int left, int top, int barPoints, int stackPoints, ArmorBarSegment segment) {
+        ArmorIcon icon = segment.getIcon();
 
-        if (glint) {
+        if (segment.hasGlint()) {
             addZOffset(context, 2); // Glint rows should appear on top of normal rows
         }
 
@@ -147,7 +144,7 @@ public class GuiArmor {
         // Drawing icons starts here
 
         if (i == 1) { // leading half icon
-            drawMaskedIcon(context, x - 4, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "leadingMask"));
+            drawMaskedIcon(context, x - 4, top, icon, segment.getLeadingMask());
             x += 4;
         }
 
@@ -156,10 +153,10 @@ public class GuiArmor {
         }
 
         if (i < stackPoints) { // Trailing half icon
-            drawMaskedIcon(context, x, top, icon, ArmorChroma.ICON_DATA.getSpecial(Util.getModid(stack), "trailingMask"));
+            drawMaskedIcon(context, x, top, icon, segment.getTrailingMask());
         }
 
-        if (glint) { // Draw one glint quad for the whole row
+        if (segment.hasGlint()) { // Draw one glint quad for the whole row
             drawTexturedGlintRect(context, left + barPoints * 4, top, left, top, stackPoints * 4 + 1, ArmorIcon.ICON_SIZE);
             addZOffset(context, -2);
         }
@@ -168,10 +165,10 @@ public class GuiArmor {
     /**
      * Finds all items in the player's equipment slots that provide armor
      * @param player The player holding the items
-     * @param pointsMap The map of each slot's points
+     * @param segments The segments making up the armor bar
      * @return The total number of armor points the player has
      */
-    private int getArmorPoints(ClientPlayerEntity player, Map<EquipmentSlot, Integer> pointsMap) {
+    private int getArmorPoints(ClientPlayerEntity player, List<ArmorBarSegment> segments) {
         AttributeContainer attributes = new AttributeContainer(FALLBACK_ATTRIBUTES);
         EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.ARMOR);
         if (armor == null) return 0;
@@ -179,14 +176,10 @@ public class GuiArmor {
         int displayedArmorCap = ArmorChroma.config.getDisplayedArmorCap();
         int attrLast = (int) ((EntityAttributeInstanceAccess) armor).armorChroma_getUnclampedValue();
 
-        EquipmentSlot[] slots = EquipmentSlot.values();
-        if (ArmorChroma.config.reverse()) {
-            Util.reverse(slots);
-        }
-
-        for (EquipmentSlot slot : slots) {
-            player.getEquippedStack(slot).applyAttributeModifiers(slot, (attribute, modifier) -> {
-                if (attribute == EntityAttributes.ARMOR) {
+        for (EquipmentSlot slot : EquipmentSlot.VALUES) {
+            ItemStack stack = player.getEquippedStack(slot);
+            stack.applyAttributeModifiers(slot, (attribute, modifier) -> {
+                if (attribute == EntityAttributes.ARMOR && !armor.hasModifier(modifier.id())) {
                     armor.addTemporaryModifier(modifier);
                 }
             });
@@ -195,7 +188,18 @@ public class GuiArmor {
             int points = attrNext - attrLast;
             attrLast = attrNext;
 
-            if (points > 0) pointsMap.put(slot, points);
+            if (points > 0) {
+                ArmorIcon icon = ArmorChroma.ICON_DATA.getIcon(stack);
+                boolean hasGlint = ArmorChroma.config.renderGlint() && stack.hasGlint();
+                String modId = Util.getModId(stack);
+                ArmorIcon leadingMask = ArmorChroma.ICON_DATA.getSpecial(modId, "leadingMask");
+                ArmorIcon trailingMask = ArmorChroma.ICON_DATA.getSpecial(modId, "trailingMask");
+                segments.add(new ArmorBarSegment(points, icon, leadingMask, trailingMask, hasGlint));
+            }
+        }
+
+        if (ArmorChroma.config.reverse()) {
+            Collections.reverse(segments);
         }
 
         return attrLast;
@@ -203,25 +207,27 @@ public class GuiArmor {
 
     /**
      * Removes leading full rows from the points map
-     * @param pointsMap The map of slots to points, traversed in entrySet order
+     * @param segments The segments making up the armor bar
      * @return The number of compressed rows
      */
-    private int compressRows(Map<EquipmentSlot, Integer> pointsMap, int totalPoints) {
+    private int compressRows(List<ArmorBarSegment> segments, int totalPoints) {
         int compressedRows = (totalPoints - 1) / ARMOR_PER_ROW;
         int compressedPoints = compressedRows * ARMOR_PER_ROW;
-        Iterator<Entry<EquipmentSlot, Integer>> it = pointsMap.entrySet().iterator();
+        int segmentsToRemove = 0;
+        int pointsSoFar = 0;
 
-        for (int i = 0; i < compressedPoints; ) {
-            Entry<EquipmentSlot, Integer> entry = it.next();
-            int d = Math.min(compressedPoints - i, entry.getValue());
+        for (ArmorBarSegment segment : segments) {
+            pointsSoFar += segment.getArmorPoints();
 
-            if (d == entry.getValue()) {
-                it.remove();
+            if (pointsSoFar <= compressedPoints) {
+                segmentsToRemove++;
             } else {
-                entry.setValue(entry.getValue() - d);
+                segment.setArmorPoints(pointsSoFar - compressedPoints);
+                break;
             }
-            i += d;
         }
+
+        segments.subList(0, segmentsToRemove).clear();
         return compressedRows;
     }
 

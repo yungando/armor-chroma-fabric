@@ -3,6 +3,7 @@ package nukeduck.armorchroma;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -40,6 +41,10 @@ public class ArmorChroma implements ClientModInitializer {
             config = AutoConfig.getConfigHolder(ArmorChromaAutoConfig.class).getConfig();
         } else {
             config = new ArmorChromaConfig();
+        }
+
+        if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+            CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> ArmorChromaDebugCommand.register(dispatcher));
         }
     }
 
