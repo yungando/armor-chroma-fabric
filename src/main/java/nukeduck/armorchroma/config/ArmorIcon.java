@@ -6,6 +6,7 @@ import net.minecraft.util.Colors;
 import net.minecraft.util.Identifier;
 import nukeduck.armorchroma.ArmorChromaRenderLayers;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 import static nukeduck.armorchroma.ArmorChroma.TEXTURE_SIZE;
@@ -54,5 +55,17 @@ public class ArmorIcon {
 
     private void draw(DrawContext context, Function<Identifier, RenderLayer> renderLayers, int x, int y) {
         context.drawTexture(renderLayers, texture, x, y, u, v, ICON_SIZE, ICON_SIZE, TEXTURE_SIZE, TEXTURE_SIZE, color);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ArmorIcon armorIcon = (ArmorIcon) o;
+        return u == armorIcon.u
+                && v == armorIcon.v
+                && color == armorIcon.color
+                && Objects.equals(texture, armorIcon.texture);
     }
 }

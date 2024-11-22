@@ -39,14 +39,17 @@ public class ArmorChromaDebugCommand {
                 literal("setarmor").then(
                         argument("points", doubleArg())
                                 .executes(ArmorChromaDebugCommand::executeSetArmor)
+                ).then(
+                        literal("reset")
+                                .executes(ArmorChromaDebugCommand::executeResetArmor)
                 )
-        ).then(
-                literal("resetarmor")
-                        .executes(ArmorChromaDebugCommand::executeResetArmor)
         ).then(
                 literal("setglint").then(
                         argument("glint", bool())
                                 .executes(ArmorChromaDebugCommand::executeSetGlint)
+                ).then(
+                        literal("reset")
+                                .executes(ArmorChromaDebugCommand::executeResetGlint)
                 )
         ));
     }
@@ -97,6 +100,11 @@ public class ArmorChromaDebugCommand {
             stack.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, false);
         }
 
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int executeResetGlint(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        getActiveStack(context).remove(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE);
         return Command.SINGLE_SUCCESS;
     }
 

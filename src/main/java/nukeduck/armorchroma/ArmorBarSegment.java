@@ -26,6 +26,10 @@ public class ArmorBarSegment {
         this.armorPoints = armorPoints;
     }
 
+    public void addArmorPoints(int delta) {
+        armorPoints += delta;
+    }
+
     public ArmorIcon getIcon() {
         return icon;
     }
@@ -40,5 +44,12 @@ public class ArmorBarSegment {
 
     public boolean hasGlint() {
         return hasGlint;
+    }
+
+    public boolean canMergeWith(ArmorBarSegment segment) {
+        return hasGlint == segment.hasGlint
+                && icon.equals(segment.icon)
+                && leadingMask.equals(segment.leadingMask)
+                && trailingMask.equals(segment.trailingMask);
     }
 }

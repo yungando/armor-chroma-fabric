@@ -194,7 +194,13 @@ public class GuiArmor {
                 String modId = Util.getModId(stack);
                 ArmorIcon leadingMask = ArmorChroma.ICON_DATA.getSpecial(modId, "leadingMask");
                 ArmorIcon trailingMask = ArmorChroma.ICON_DATA.getSpecial(modId, "trailingMask");
-                segments.add(new ArmorBarSegment(points, icon, leadingMask, trailingMask, hasGlint));
+                ArmorBarSegment segment = new ArmorBarSegment(points, icon, leadingMask, trailingMask, hasGlint);
+
+                if (!segments.isEmpty() && segment.canMergeWith(segments.getLast())) {
+                    segments.getLast().addArmorPoints(segment.getArmorPoints());
+                } else {
+                    segments.add(segment);
+                }
             }
         }
 
