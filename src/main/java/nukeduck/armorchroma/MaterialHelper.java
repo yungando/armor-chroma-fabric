@@ -3,8 +3,9 @@ package nukeduck.armorchroma;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.EquippableComponent;
 import net.minecraft.item.Item;
-import net.minecraft.item.equipment.EquipmentModels;
-import net.minecraft.util.Identifier;
+import net.minecraft.item.equipment.EquipmentAsset;
+import net.minecraft.item.equipment.EquipmentAssetKeys;
+import net.minecraft.registry.RegistryKey;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
@@ -21,15 +22,15 @@ public class MaterialHelper {
             // Armor materials don't have IDs anymore since 1.21.2, and models
             // are the closest thing to materials (with some exceptions such
             // as turtle scutes)
-            Optional<Identifier> model = equippableComponent.model();
+            Optional<RegistryKey<EquipmentAsset>> optionalAsset = equippableComponent.assetId();
 
-            if (model.isPresent()) {
-                Identifier id = model.get();
+            if (optionalAsset.isPresent()) {
+                RegistryKey<EquipmentAsset> asset = optionalAsset.get();
 
-                if (id.equals(EquipmentModels.TURTLE_SCUTE)) {
+                if (asset.equals(EquipmentAssetKeys.TURTLE_SCUTE)) {
                     return TURTLE_MATERIAL;
                 } else {
-                    return id.getPath();
+                    return asset.getValue().getPath();
                 }
             }
         }
