@@ -15,6 +15,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import nukeduck.armorchroma.config.ArmorIcon;
+import nukeduck.armorchroma.config.SpecialIconKey;
 import nukeduck.armorchroma.config.Util;
 
 import java.util.ArrayList;
@@ -60,7 +61,7 @@ public class GuiArmor {
      */
     public void draw(DrawContext context, int x, int y) {
         List<ArmorBarSegment> segments = new ArrayList<>(EquipmentSlot.VALUES.size());
-        int totalPoints = getArmorPoints(client.player, segments);
+        int totalPoints = buildArmorSegments(client.player, segments);
         if (totalPoints <= 0) return;
 
         int barPoints = 0;
@@ -168,13 +169,13 @@ public class GuiArmor {
      * @param segments The segments making up the armor bar
      * @return The total number of armor points the player has
      */
-    private int getArmorPoints(ClientPlayerEntity player, List<ArmorBarSegment> segments) {
+    private int buildArmorSegments(ClientPlayerEntity player, List<ArmorBarSegment> segments) {
         AttributeContainer attributes = new AttributeContainer(FALLBACK_ATTRIBUTES);
         EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.ARMOR);
         if (armor == null) return 0;
 
         int displayedArmorCap = ArmorChroma.config.getDisplayedArmorCap();
-        int attrLast = (int) ((EntityAttributeInstanceAccess) armor).armorChroma_getUnclampedValue();
+        int totalPoints = (int) ((EntityAttributeInstanceAccess) armor).armorChroma_getUnclampedValue();
 
         for (EquipmentSlot slot : EquipmentSlot.VALUES) {
             ItemStack stack = player.getEquippedStack(slot);
@@ -184,17 +185,17 @@ public class GuiArmor {
                 }
             });
 
-            int attrNext = Math.min(displayedArmorCap, (int) ((EntityAttributeInstanceAccess) armor).armorChroma_getUnclampedValue());
-            int points = attrNext - attrLast;
-            attrLast = attrNext;
+            int nextTotalPoints = Math.min(displayedArmorCap, (int) ((EntityAttributeInstanceAccess) armor).armorChroma_getUnclampedValue());
+            int pointDelta = nextTotalPoints - totalPoints;
+            totalPoints = nextTotalPoints;
 
-            if (points > 0) {
+            if (pointDelta > 0) {
                 ArmorIcon icon = ArmorChroma.ICON_DATA.getIcon(stack);
                 boolean hasGlint = ArmorChroma.config.renderGlint() && stack.hasGlint();
                 String modId = Util.getModId(stack);
-                ArmorIcon leadingMask = ArmorChroma.ICON_DATA.getSpecial(modId, "leadingMask");
-                ArmorIcon trailingMask = ArmorChroma.ICON_DATA.getSpecial(modId, "trailingMask");
-                ArmorBarSegment segment = new ArmorBarSegment(points, icon, leadingMask, trailingMask, hasGlint);
+                ArmorIcon leadingMask = ArmorChroma.ICON_DATA.getSpecial(modId, SpecialIconKey.LEADING_MASK);
+                ArmorIcon trailingMask = ArmorChroma.ICON_DATA.getSpecial(modId, SpecialIconKey.TRAILING_MASK);
+                ArmorBarSegment segment = new ArmorBarSegment(pointDelta, icon, leadingMask, trailingMask, hasGlint);
 
                 if (!segments.isEmpty() && segment.canMergeWith(segments.getLast())) {
                     segments.getLast().addArmorPoints(segment.getArmorPoints());
@@ -208,7 +209,7 @@ public class GuiArmor {
             Collections.reverse(segments);
         }
 
-        return attrLast;
+        return totalPoints;
     }
 
     /**

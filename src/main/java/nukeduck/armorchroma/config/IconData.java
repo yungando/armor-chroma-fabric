@@ -50,14 +50,18 @@ public class IconData implements SimpleResourceReloadListener<Void> {
             if (i != null) {
                 return new ArmorIcon(modId, i, Util.getColor(stack));
             } else {
-                return getSpecial(modId, DEFAULT);
+                return getSpecial(modId, SpecialIconKey.DEFAULT);
             }
         }
 
-        return getSpecial(MINECRAFT, DEFAULT);
+        return getSpecial(SpecialIconKey.DEFAULT);
     }
 
-    public ArmorIcon getSpecial(String modid, String key) {
+    public ArmorIcon getSpecial(SpecialIconKey key) {
+        return getSpecial(MINECRAFT, key);
+    }
+
+    public ArmorIcon getSpecial(String modid, SpecialIconKey key) {
         ArmorIcon icon = getSpecialWithoutFallback(modid, key);
 
         if (icon == null && !modid.equals(MINECRAFT)) {
@@ -67,11 +71,11 @@ public class IconData implements SimpleResourceReloadListener<Void> {
         return icon != null ? icon : FALLBACK_ICON;
     }
 
-    private ArmorIcon getSpecialWithoutFallback(String modid, String key) {
+    private ArmorIcon getSpecialWithoutFallback(String modid, SpecialIconKey key) {
         IconTable mod = mods.get(modid);
 
         if (mod != null) {
-            Integer i = mod.getSpecialIndex(key);
+            Integer i = mod.getSpecialIndex(key.value);
 
             if (i != null) {
                 return new ArmorIcon(modid, i);
