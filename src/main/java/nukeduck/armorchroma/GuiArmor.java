@@ -77,6 +77,7 @@ public class GuiArmor {
 
         // Most negative zOffset here
         drawBackground(context, x, y, compressedRows);
+        context.getMatrices().pop();
     }
 
     /**
