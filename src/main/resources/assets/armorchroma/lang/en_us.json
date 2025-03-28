@@ -11,6 +11,8 @@
     "text.autoconfig.armorchroma.option.displayedArmorCap": "Displayed Armor Cap",
     "text.autoconfig.armorchroma.option.displayedArmorCap.@Tooltip": "Maximum armor points to be displayed",
     "text.autoconfig.armorchroma.option.reverse": "Reverse the Armor Order",
+    "text.autoconfig.armorchroma.option.showMaterialInTooltip": "Show Material in Tooltip",
+    "text.autoconfig.armorchroma.option.showMaterialInTooltip.@Tooltip": "Whether to show armor materials in inventory tooltips",
 
     "armorchroma.tooltip.material": "Armor Material: %s"
 }

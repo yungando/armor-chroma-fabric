@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import nukeduck.armorchroma.ArmorChroma;
 import nukeduck.armorchroma.MaterialHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,7 +27,7 @@ public abstract class ItemStackMixin {
      */
     @Inject(method = "getTooltip", at = @At("RETURN"))
     private void onGetTooltip(Item.TooltipContext context, @Nullable PlayerEntity player, TooltipType type, CallbackInfoReturnable<List<Text>> info) {
-        if (type.isAdvanced()) {
+        if (ArmorChroma.config.showMaterialInTooltip()) {
             Item item = getItem();
             String material = MaterialHelper.getMaterial(item);
 

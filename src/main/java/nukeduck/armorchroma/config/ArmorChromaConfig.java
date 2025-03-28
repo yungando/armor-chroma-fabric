@@ -14,6 +14,7 @@ public class ArmorChromaConfig {
     public boolean compressBar() { return false; }
     public int getDisplayedArmorCap() { return 5 * 20; }
     public boolean reverse() { return false; }
+    public boolean showMaterialInTooltip() { return false; }
 
     /** Config class requiring AutoConfig */
     @SuppressWarnings("FieldMayBeFinal")
@@ -27,6 +28,7 @@ public class ArmorChromaConfig {
         @Tooltip private boolean compressBar = super.compressBar();
         @Tooltip private int displayedArmorCap = super.getDisplayedArmorCap();
         private boolean reverse = super.reverse();
+        @Tooltip private boolean showMaterialInTooltip = super.reverse();
 
         @Override public boolean isEnabled() { return enabled; }
         @Override public boolean renderGlint() { return renderGlint; }
@@ -35,6 +37,7 @@ public class ArmorChromaConfig {
         @Override public boolean compressBar() { return compressBar; }
         @Override public int getDisplayedArmorCap() { return displayedArmorCap; }
         @Override public boolean reverse() { return reverse; }
+        @Override public boolean showMaterialInTooltip() { return showMaterialInTooltip; }
     }
 
 }

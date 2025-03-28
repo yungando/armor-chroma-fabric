@@ -13,7 +13,7 @@ To find which icon to use for a given item, the mod uses the following pieces of
 - Item ID (sometimes called "path," part after `:` in the full item ID, e.g. "iron_leggings")
 - Material (if you are a modder, see the mod's `MaterialHelper` class)
 
-These can be found in the item tooltip when advanced tooltips are enabled (F3 + H).
+These can be found in the item tooltip when enabling the "Show Material in Tooltip" option.
 
 ![Location of the namespace, item ID and material in an item tooltip](namespace-id-material.png)
 
