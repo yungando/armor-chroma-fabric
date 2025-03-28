@@ -96,16 +96,4 @@ public final class Util {
         }
         return -1;
     }
-
-    public static <T> List<T> filter(Collection<T> collection, Predicate<T> predicate) {
-        List<T> filtered = new ArrayList<>(collection.size());
-
-        for (T value : collection) {
-            if (predicate.test(value)) {
-                filtered.add(value);
-            }
-        }
-
-        return filtered;
-    }
 }

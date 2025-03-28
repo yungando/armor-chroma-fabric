@@ -1,11 +1,13 @@
 package nukeduck.armorchroma;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.platform.DestFactor;
+import com.mojang.blaze3d.platform.SourceFactor;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.TriState;
 import net.minecraft.util.Util;
@@ -14,34 +16,34 @@ import java.util.function.Function;
 
 public class ArmorChromaRenderLayers {
 
-    private static final RenderPhase.Transparency MASKED_ICON_TRANSPARENCY = new RenderPhase.Transparency(
-            "armor_chroma_masked_icon_transparency",
-            () -> {
-                RenderSystem.enableBlend();
-                RenderSystem.blendFunc(GlStateManager.SrcFactor.DST_COLOR, GlStateManager.DstFactor.ZERO);
-            },
-            () -> {
-                RenderSystem.disableBlend();
-                RenderSystem.defaultBlendFunc();
-            }
-    );
+    private static final BlendFunction MASKED_ICON_BLEND_FUNCTION = new BlendFunction(SourceFactor.DST_COLOR, DestFactor.ZERO);
 
-    private static final Function<Identifier, RenderLayer> MASKED_ICON = Util.memoize(
+    /**
+     * Based on {@link RenderPipelines#GUI_TEXTURED_OVERLAY}.
+     */
+    private static final RenderPipeline MASKED_ICON_PIPELINE = RenderPipelines.register(
+            RenderPipeline.builder(RenderPipelines.POSITION_TEX_COLOR_SNIPPET)
+                    .withLocation(Identifier.of(ArmorChroma.MODID, "pipeline/masked_icon"))
+                    .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
+                    .withBlend(MASKED_ICON_BLEND_FUNCTION)
+                    .build());
+
+    /**
+     * Based on {@link RenderLayer#GUI_TEXTURED_OVERLAY}.
+     */
+    @SuppressWarnings("JavadocReference")
+    private static final Function<Identifier, RenderLayer> MASKED_ICON_RENDER_LAYER = Util.memoize(
             texture -> RenderLayer.of(
                     "armor_chroma_masked_icon",
-                    VertexFormats.POSITION_TEXTURE_COLOR,
-                    VertexFormat.DrawMode.QUADS,
-                    RenderLayer.CUTOUT_BUFFER_SIZE,
+                    RenderLayer.DEFAULT_BUFFER_SIZE,
+                    MASKED_ICON_PIPELINE,
                     RenderLayer.MultiPhaseParameters.builder()
-                            .texture(new RenderPhase.Texture(texture, TriState.FALSE, false))
-                            .program(RenderPhase.POSITION_TEXTURE_COLOR_PROGRAM)
-                            .transparency(MASKED_ICON_TRANSPARENCY)
-                            .depthTest(RenderPhase.EQUAL_DEPTH_TEST)
+                            .texture(new RenderPhase.Texture(texture, TriState.DEFAULT, false))
                             .build(false)
             )
     );
 
     public static RenderLayer getMaskedIcon(Identifier texture) {
-        return MASKED_ICON.apply(texture);
+        return MASKED_ICON_RENDER_LAYER.apply(texture);
     }
 }

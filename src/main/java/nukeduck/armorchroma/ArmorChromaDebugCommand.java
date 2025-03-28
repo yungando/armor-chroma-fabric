@@ -15,11 +15,11 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import nukeduck.armorchroma.config.Util;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.mojang.brigadier.arguments.BoolArgumentType.bool;
 import static com.mojang.brigadier.arguments.BoolArgumentType.getBool;
@@ -58,20 +58,21 @@ public class ArmorChromaDebugCommand {
     private static int executeSetArmor(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ItemStack stack = getActiveStack(context);
         double points = getDouble(context, "points");
-        AttributeModifiersComponent modifiersComponent = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        AttributeModifiersComponent originalModifiersComponent = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
+        List<AttributeModifiersComponent.Entry> modifiers;
 
-        if (modifiersComponent == null) {
-            modifiersComponent = new AttributeModifiersComponent(new ArrayList<>(1), true);
+        if (originalModifiersComponent == null) {
+            modifiers = new ArrayList<>(1);
         } else {
-            // Copying modifiersComponent.modifiers because it may be immutable
-            List<AttributeModifiersComponent.Entry> modifiers = Util.filter(modifiersComponent.modifiers(), entry -> entry.attribute() != EntityAttributes.ARMOR);
-            modifiersComponent = new AttributeModifiersComponent(modifiers, modifiersComponent.showInTooltip());
+            modifiers = originalModifiersComponent.modifiers()
+                    .stream()
+                    .filter(entry -> entry.attribute() != EntityAttributes.ARMOR)
+                    .collect(Collectors.toCollection(ArrayList::new));
         }
 
         EntityAttributeModifier attributeModifier = new EntityAttributeModifier(Identifier.of(ArmorChroma.MODID, UUID.randomUUID().toString()), points, EntityAttributeModifier.Operation.ADD_VALUE);
-        AttributeModifiersComponent.Entry entry = new AttributeModifiersComponent.Entry(EntityAttributes.ARMOR, attributeModifier, AttributeModifierSlot.ANY);
-        modifiersComponent.modifiers().add(entry);
-        stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, modifiersComponent);
+        modifiers.add(new AttributeModifiersComponent.Entry(EntityAttributes.ARMOR, attributeModifier, AttributeModifierSlot.ANY));
+        stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(modifiers));
 
         return Command.SINGLE_SUCCESS;
     }
@@ -81,10 +82,12 @@ public class ArmorChromaDebugCommand {
         AttributeModifiersComponent oldComponent = stack.get(DataComponentTypes.ATTRIBUTE_MODIFIERS);
 
         if (oldComponent != null) {
-            List<AttributeModifiersComponent.Entry> modifiers = Util.filter(oldComponent.modifiers(),
-                    entry -> entry.attribute() != EntityAttributes.ARMOR || !entry.modifier().id().getNamespace().equals(ArmorChroma.MODID));
+            List<AttributeModifiersComponent.Entry> modifiers = oldComponent.modifiers()
+                    .stream()
+                    .filter(entry -> entry.attribute() != EntityAttributes.ARMOR || !entry.modifier().id().getNamespace().equals(ArmorChroma.MODID))
+                    .toList();
 
-            stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(modifiers, oldComponent.showInTooltip()));
+            stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, new AttributeModifiersComponent(modifiers));
         }
 
         return Command.SINGLE_SUCCESS;
